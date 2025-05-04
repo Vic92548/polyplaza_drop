@@ -36,100 +36,82 @@
 
     <!-- How the system works -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">How Drops Work</h2>
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Drop System Overview</h2>
 
-        <div class="grid md:grid-cols-2 gap-6">
-            <div class="bg-blue-50 p-4 rounded-md border border-blue-100">
-                <h3 class="text-lg font-semibold text-blue-800 mb-2">Playtime Drops</h3>
-                <p class="text-gray-700 mb-2">Every <span class="font-semibold">20 minutes</span> of gameplay, you'll receive a free box that may contain clothing items.</p>
-                <p class="text-gray-700">These boxes have different rarities (Common, Rare, Epic, Legendary) with varying drop chances.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">
+                    <i class="fas fa-clock text-blue-500 mr-2"></i> Playtime Drops
+                </h3>
+                <p class="text-gray-600 mb-2">Every 20 minutes of gameplay, you have a chance to receive a random item drop.</p>
+                <ul class="list-disc list-inside text-gray-600 ml-2">
+                    <li>Common items are the most frequent drops</li>
+                    <li>Rare and Epic drops are less common</li>
+                    <li>Legendary items have the lowest drop chance</li>
+                </ul>
             </div>
 
-            <div class="bg-purple-50 p-4 rounded-md border border-purple-100">
-                <h3 class="text-lg font-semibold text-purple-800 mb-2">Box & Key System</h3>
-                <p class="text-gray-700 mb-2">Boxes can be opened with keys which can be purchased from the <a href="https://store.steampowered.com/itemstore/2716030/browse/?filter=all" class="text-blue-600 hover:underline">Steam store</a>.</p>
-                <p class="text-gray-700">Each box contains different items with specific drop rates as shown below.</p>
+            <div>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">
+                    <i class="fas fa-box-open text-purple-500 mr-2"></i> Case System
+                </h3>
+                <p class="text-gray-600 mb-2">Cases can be purchased or dropped, and require a matching key to open.</p>
+                <ul class="list-disc list-inside text-gray-600 ml-2">
+                    <li>Keys can be purchased from the Steam Item Store</li>
+                    <li>Different cases contain different sets of items</li>
+                    <li>Higher rarity items have lower drop chances</li>
+                </ul>
             </div>
         </div>
     </div>
 
-    <!-- Loading indicator -->
-    <div id="loading-indicator" class="text-center py-8">
-        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        <p class="mt-2 text-gray-600">Loading item data...</p>
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="flex items-center justify-center p-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <p class="ml-3 text-lg text-gray-600">Loading item data...</p>
     </div>
 
-    <!-- Error message container -->
-    <div id="error-container" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-        <p>Failed to load data. Please try refreshing the page.</p>
+    <!-- Error Message -->
+    <div id="error-container" class="hidden p-8 bg-red-50 border border-red-200 rounded-lg text-center">
+        <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
+        <h2 class="text-xl font-bold text-red-800 mb-2">Error Loading Data</h2>
+        <p class="text-gray-700">Unable to load item data. Please refresh the page or try again later.</p>
     </div>
 
-    <!-- Main content (hidden until loaded) -->
+    <!-- Main Content -->
     <div id="main-content" class="hidden">
-        <!-- Filters -->
-        <div class="bg-white rounded-lg shadow-md p-4 mb-8">
-            <div class="flex flex-wrap gap-4 items-center">
-                <div>
-                    <label for="rarityFilter" class="block text-sm font-medium text-gray-700 mb-1">Rarity</label>
-                    <select id="rarityFilter" class="rounded-md border border-gray-300 px-3 py-2 text-sm">
-                        <option value="all">All Rarities</option>
-                        <option value="common">Common</option>
-                        <option value="rare">Rare</option>
-                        <option value="epic">Epic</option>
-                        <option value="legendary">Legendary</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                    <input type="text" id="searchInput" placeholder="Search items..."
-                           class="rounded-md border border-gray-300 px-3 py-2 text-sm">
-                </div>
-
-                <div class="ml-auto">
-                    <label for="sortBy" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                    <select id="sortBy" class="rounded-md border border-gray-300 px-3 py-2 text-sm">
-                        <option value="name">Name (A-Z)</option>
-                        <option value="rarity">Rarity</option>
-                    </select>
-                </div>
-            </div>
+        <!-- Tabs Navigation -->
+        <div class="flex border-b border-gray-200 mb-6">
+            <button class="tab-button px-4 py-2 text-sm font-medium active" data-tab="all-items">
+                <i class="fas fa-tshirt mr-1"></i> All Clothing Items
+            </button>
+            <button class="tab-button px-4 py-2 text-sm font-medium" data-tab="box-contents">
+                <i class="fas fa-box-open mr-1"></i> Case Contents
+            </button>
+            <button class="tab-button px-4 py-2 text-sm font-medium" data-tab="playtime-drops">
+                <i class="fas fa-clock mr-1"></i> Playtime Drop Rates
+            </button>
         </div>
 
-        <!-- Tabs -->
-        <div class="mb-6">
-            <div class="flex border-b border-gray-200">
-                <button class="tab-button py-2 px-4 border-b-2 border-blue-500 font-medium text-blue-600"
-                        data-tab="all-items">All Items</button>
-                <button class="tab-button py-2 px-4 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        data-tab="box-contents">Box Contents</button>
-                <button class="tab-button py-2 px-4 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                        data-tab="playtime-drops">Playtime Drops</button>
-            </div>
+        <!-- Tab Content: All Items -->
+        <div id="tab-all-items" class="tab-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="items-container" class="col-span-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
-        <!-- Tab Content -->
-        <div class="tab-content" id="all-items">
-            <div id="items-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- Items will be populated here -->
-            </div>
+        <!-- Tab Content: Box Contents -->
+        <div id="tab-box-contents" class="tab-content hidden">
+            <div id="boxes-container"></div>
         </div>
 
-        <div class="tab-content hidden" id="box-contents">
-            <div id="boxes-container" class="space-y-8">
-                <!-- Box sections will be populated here -->
-            </div>
-        </div>
-
-        <div class="tab-content hidden" id="playtime-drops">
-            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
-                <div class="bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-3">
-                    <h3 class="text-xl font-bold text-white">Playtime Drop Rates</h3>
-                    <p class="text-white text-opacity-90 text-sm">Every 20 minutes of gameplay</p>
+        <!-- Tab Content: Playtime Drops -->
+        <div id="tab-playtime-drops" class="tab-content hidden">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 text-white">
+                    <h3 class="text-xl font-bold">Playtime Drop Chances</h3>
+                    <p class="text-sm">Items you can receive every 20 minutes of gameplay</p>
                 </div>
-                <div id="playtime-drop-rates" class="divide-y divide-gray-200">
-                    <!-- Playtime drop rates will be populated here -->
-                </div>
+
+                <div class="divide-y divide-gray-200" id="playtime-drop-rates"></div>
             </div>
         </div>
     </div>
@@ -139,6 +121,7 @@
     // Global variables to store data
     let globalItems = [];
     let boxesMap = {}; // Maps box IDs to full box details including contents
+    let caseToBoxMap = {}; // Maps case itemdefid to generator itemdefid
 
     // Fetch data from external JSON file
     document.addEventListener('DOMContentLoaded', async function() {
@@ -172,6 +155,35 @@
             itemsById[item.itemdefid] = item;
         });
 
+        // Find case and box relationships using exchange
+        const generatorCasePairs = []; // Store generator and case pairs
+
+        // First pass: Find all generators and their exchange item (case)
+        globalItems.forEach(item => {
+            if (item.type === 'generator' && item.exchange) {
+                const exchangeItems = parseExchange(item.exchange);
+                if (exchangeItems.length > 0) {
+                    generatorCasePairs.push({
+                        generatorId: item.itemdefid,
+                        caseId: exchangeItems[0],
+                        generator: item
+                    });
+                }
+            }
+        });
+
+        // Second pass: Update the case-to-box mapping
+        generatorCasePairs.forEach(pair => {
+            const caseItem = itemsById[pair.caseId];
+            if (caseItem) {
+                caseToBoxMap[pair.caseId] = pair.generatorId;
+                // Store the case icon URL in the generator for display
+                if (pair.generator && caseItem.icon_url) {
+                    pair.generator.box_icon_url = caseItem.icon_url;
+                }
+            }
+        });
+
         // Process all boxes (generators with bundles)
         globalItems.forEach(item => {
             if (item.type === 'generator' && item.bundle) {
@@ -201,73 +213,15 @@
         });
     }
 
-    function initializeUI() {
-        // Populate All Items
-        populateItems();
+    function parseExchange(exchangeString) {
+        // Parse exchange string format: "itemdefid:quantity;itemdefid:quantity"
+        if (!exchangeString) return [];
 
-        // Populate Box Contents
-        populateBoxContents();
-
-        // Process Playtime Drops
-        processPlaytimeDrops();
-
-        // Tab Navigation
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', () => {
-                // Remove active class from all tabs
-                document.querySelectorAll('.tab-button').forEach(btn => {
-                    btn.classList.remove('border-blue-500', 'text-blue-600');
-                    btn.classList.add('border-transparent', 'text-gray-500');
-                });
-
-                // Add active class to clicked tab
-                button.classList.add('border-blue-500', 'text-blue-600');
-                button.classList.remove('border-transparent', 'text-gray-500');
-
-                // Hide all tab content
-                document.querySelectorAll('.tab-content').forEach(content => {
-                    content.classList.add('hidden');
-                });
-
-                // Show selected tab content
-                const tabId = button.getAttribute('data-tab');
-                document.getElementById(tabId).classList.remove('hidden');
+        return exchangeString.split(';')
+            .map(part => {
+                const [id, quantity] = part.split(':');
+                return parseInt(id);
             });
-        });
-
-        // Filtering and Sorting
-        const rarityFilter = document.getElementById('rarityFilter');
-        const searchInput = document.getElementById('searchInput');
-        const sortBy = document.getElementById('sortBy');
-
-        function applyFilters() {
-            const rarity = rarityFilter.value;
-            const searchTerm = searchInput.value.toLowerCase();
-            const sortOption = sortBy.value;
-
-            let filteredItems = globalItems.filter(item =>
-                item.display_type === "Cloth" &&
-                (rarity === 'all' || getRarityFromColors(item).toLowerCase() === rarity) &&
-                item.name.toLowerCase().includes(searchTerm)
-            );
-
-            if (sortOption === 'name') {
-                filteredItems.sort((a, b) => a.name.localeCompare(b.name));
-            } else if (sortOption === 'rarity') {
-                const rarityOrder = { legendary: 1, epic: 2, rare: 3, common: 4 };
-                filteredItems.sort((a, b) => {
-                    const rarityA = getRarityFromColors(a).toLowerCase();
-                    const rarityB = getRarityFromColors(b).toLowerCase();
-                    return rarityOrder[rarityA] - rarityOrder[rarityB];
-                });
-            }
-
-            populateItems(filteredItems);
-        }
-
-        rarityFilter.addEventListener('change', applyFilters);
-        searchInput.addEventListener('input', applyFilters);
-        sortBy.addEventListener('change', applyFilters);
     }
 
     function populateItems(items = null) {
@@ -287,13 +241,17 @@
             Object.values(boxesMap).forEach(box => {
                 const itemInBox = box.contents.find(c => c.itemdefid === item.itemdefid);
                 if (itemInBox) {
+                    // Find the correct case item that has the icon we want to display
+                    const boxIconUrl = box.box_icon_url ||
+                        (box.icon_url !== 'undefined' ? box.icon_url : null);
+
                     sourceBoxes.push({
                         id: box.itemdefid,
                         name: box.name,
                         percentage: itemInBox.percentage,
                         boxRarity: getRarityFromColors(box),
                         nameColor: box.name_color || getDefaultNameColor(getRarityFromColors(box)),
-                        icon_url: box.icon_url
+                        icon_url: boxIconUrl
                     });
                 }
             });
@@ -311,7 +269,8 @@
                                 <div class="flex justify-between items-center mb-2">
                                     <a href="#" class="box-link flex items-center" data-box-id="${box.id}">
                                         <img src="${box.icon_url}"
-                                             alt="${box.name}" class="w-5 h-5 mr-2">
+                                             alt="${box.name}" class="w-5 h-5 mr-2"
+                                             onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
                                         <span class="text-xs" style="color: #${box.nameColor}">${box.name}</span>
                                     </a>
                                     <span class="text-xs font-medium">${box.percentage}%</span>
@@ -324,8 +283,10 @@
             itemEl.innerHTML = `
                     <div class="p-4">
                         <div class="flex items-center mb-3">
-                            <img src="${item.icon_url}" alt="${item.name}"
-                                 class="w-16 h-16 object-contain mr-3 bg-gray-100 rounded">
+                            <img src="${item.icon_url}"
+                                 alt="${item.name}"
+                                 class="w-16 h-16 object-contain mr-3 bg-gray-100 rounded"
+                                 onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
                             <div>
                                 <h3 class="font-medium text-lg" style="color: #${nameColor}">${item.name}</h3>
                                 <span class="inline-block px-2 py-1 rounded text-xs text-white"
@@ -377,6 +338,9 @@
             const bgColor = box.background_color || getDefaultBgColor(rarity);
             const nameColor = box.name_color || getDefaultNameColor(rarity);
 
+            // Get the correct case icon from the mapped case
+            const boxIcon = box.box_icon_url || (box.icon_url !== 'undefined' ? box.icon_url : null);
+
             // Create box section
             const boxSection = document.createElement('div');
             boxSection.id = `box-${box.itemdefid}`;
@@ -386,8 +350,9 @@
             boxSection.innerHTML = `
                     <div class="px-4 py-3 text-white" style="background-color: #${bgColor}">
                         <div class="flex items-center">
-                            <img src="${box.icon_url}"
-                                 alt="${box.name}" class="w-8 h-8 mr-3">
+                            <img src="${boxIcon}"
+                                 alt="${box.name}" class="w-8 h-8 mr-3"
+                                 onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
                             <div>
                                 <h3 class="text-xl font-bold">${box.name}</h3>
                                 <p class="text-white text-opacity-90 text-sm">${rarity} Box</p>
@@ -414,7 +379,8 @@
                 itemRow.innerHTML = `
                         <div class="flex items-center flex-1">
                             <img src="${item.icon_url}"
-                                 alt="${item.name}" class="w-10 h-10 mr-3 bg-gray-100 rounded">
+                                 alt="${item.name}" class="w-10 h-10 mr-3 bg-gray-100 rounded"
+                                 onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
                             <div>
                                 <h4 class="text-sm font-medium" style="color: #${itemNameColor}">${item.name}</h4>
                                 <span class="inline-block px-2 py-0.5 rounded-sm text-xs text-white"
@@ -461,7 +427,9 @@
 
             itemEl.innerHTML = `
                     <div class="flex items-center flex-1">
-                        <img src="${item.icon_url}" alt="${item.name}" class="w-8 h-8 mr-3">
+                        <img src="${item.icon_url}"
+                             alt="${item.name}" class="w-8 h-8 mr-3"
+                             onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
                         <div>
                             <h4 class="text-sm font-medium" style="color: #${nameColor}">${item.name}</h4>
                             <span class="text-xs capitalize" style="color: #${nameColor}">${rarity}</span>
@@ -474,27 +442,50 @@
         });
     }
 
-    function parseBundle(bundle) {
-        if (!bundle) return [];
+    function parseBundle(bundleString) {
+        // Parse bundle string format: "itemdefid:weight;itemdefid:weight"
+        if (!bundleString) return [];
 
-        return bundle.split(';')
-            .map(item => {
-                const [id, weight] = item.split('x');
+        return bundleString.split(';')
+            .map(part => {
+                const [id, weight] = part.split(':');
                 return {
                     id: parseInt(id),
-                    weight: parseInt(weight)
+                    weight: parseFloat(weight)
                 };
             });
     }
 
+    function initializeUI() {
+        // Populate all sections
+        populateItems();
+        populateBoxContents();
+        processPlaytimeDrops();
+
+        // Set up tab switching
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons and hide all contents
+                tabButtons.forEach(b => b.classList.remove('active', 'text-blue-600', 'border-b-2', 'border-blue-600'));
+                tabContents.forEach(c => c.classList.add('hidden'));
+
+                // Add active class to clicked button and show corresponding content
+                button.classList.add('active', 'text-blue-600', 'border-b-2', 'border-blue-600');
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            });
+        });
+    }
+
+    // Helper function to determine item rarity based on colors
     function getRarityFromColors(item) {
-        if (!item) return 'Common';
+        const bgColor = item.background_color;
+        const nameColor = item.name_color;
 
-        const bgColor = item.background_color?.toLowerCase();
-        const nameColor = item.name_color?.toLowerCase();
-
-        if (bgColor === 'e67e22' || nameColor === 'e67e22' ||
-            bgColor === 'f39c12' || nameColor === 'f39c12') {
+        if (bgColor === 'f39c12' || nameColor === 'e67e22') {
             return 'Legendary';
         } else if (bgColor === '9b59b6' || nameColor === '9b59b6') {
             return 'Epic';
