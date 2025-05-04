@@ -6,6 +6,19 @@
     <title>Poly Plaza - Clothing Items & Drop Rates</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="script.js" defer></script>
+    <style>
+        .highlight-box {
+            animation: pulse 1s;
+            box-shadow: 0 0 0 10px rgba(59, 130, 246, 0.3);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+    </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
 <div class="container mx-auto px-4 py-8">
@@ -38,494 +51,162 @@
     <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 class="text-2xl font-bold text-gray-800 mb-4">Drop System Overview</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-                <h3 class="text-lg font-medium text-gray-700 mb-2">
-                    <i class="fas fa-clock text-blue-500 mr-2"></i> Playtime Drops
-                </h3>
-                <p class="text-gray-600 mb-2">Every 20 minutes of gameplay, you have a chance to receive a random item drop.</p>
-                <ul class="list-disc list-inside text-gray-600 ml-2">
-                    <li>Common items are the most frequent drops</li>
-                    <li>Rare and Epic drops are less common</li>
-                    <li>Legendary items have the lowest drop chance</li>
-                </ul>
+        <div class="flex flex-wrap gap-8">
+            <div class="flex-1 min-w-[300px]">
+                <div class="flex items-center mb-2">
+                    <div class="w-8 h-8 bg-[#f39c12] rounded-full mr-3"></div>
+                    <p class="text-lg font-semibold">Legendary Items <span class="text-sm text-gray-600">(Highest Tier)</span></p>
+                </div>
+                <p class="text-gray-700 mb-4">Extremely rare, top-tier items with the lowest drop rate. A true symbol of prestige.</p>
+
+                <div class="flex items-center mb-2">
+                    <div class="w-8 h-8 bg-[#9b59b6] rounded-full mr-3"></div>
+                    <p class="text-lg font-semibold">Epic Items</p>
+                </div>
+                <p class="text-gray-700 mb-4">Very rare items with special features and designs. Highly sought after.</p>
             </div>
 
-            <div>
-                <h3 class="text-lg font-medium text-gray-700 mb-2">
-                    <i class="fas fa-box-open text-purple-500 mr-2"></i> Case System
-                </h3>
-                <p class="text-gray-600 mb-2">Cases can be purchased or dropped, and require a matching key to open.</p>
-                <ul class="list-disc list-inside text-gray-600 ml-2">
-                    <li>Keys can be purchased from the Steam Item Store</li>
-                    <li>Different cases contain different sets of items</li>
-                    <li>Higher rarity items have lower drop chances</li>
-                </ul>
+            <div class="flex-1 min-w-[300px]">
+                <div class="flex items-center mb-2">
+                    <div class="w-8 h-8 bg-[#3498db] rounded-full mr-3"></div>
+                    <p class="text-lg font-semibold">Rare Items</p>
+                </div>
+                <p class="text-gray-700 mb-4">Uncommon items with unique designs. More challenging to acquire than commons.</p>
+
+                <div class="flex items-center mb-2">
+                    <div class="w-8 h-8 bg-[#95a5a6] rounded-full mr-3"></div>
+                    <p class="text-lg font-semibold">Common Items <span class="text-sm text-gray-600">(Base Tier)</span></p>
+                </div>
+                <p class="text-gray-700">Basic items that drop frequently. While more accessible, they're still stylish customization options.</p>
             </div>
         </div>
     </div>
 
-    <!-- Loading Indicator -->
-    <div id="loading-indicator" class="flex items-center justify-center p-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        <p class="ml-3 text-lg text-gray-600">Loading item data...</p>
+    <!-- Loading indicator -->
+    <div id="loading-indicator" class="flex flex-col items-center justify-center py-16">
+        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-xl text-gray-600">Loading item data...</p>
     </div>
 
-    <!-- Error Message -->
-    <div id="error-container" class="hidden p-8 bg-red-50 border border-red-200 rounded-lg text-center">
-        <i class="fas fa-exclamation-triangle text-red-500 text-4xl mb-4"></i>
-        <h2 class="text-xl font-bold text-red-800 mb-2">Error Loading Data</h2>
-        <p class="text-gray-700">Unable to load item data. Please refresh the page or try again later.</p>
+    <!-- Error message if fetch fails -->
+    <div id="error-container" class="hidden bg-red-100 text-red-700 p-6 rounded-lg shadow-md text-center">
+        <i class="fas fa-exclamation-triangle text-4xl mb-3"></i>
+        <h3 class="text-xl font-bold mb-2">Error Loading Data</h3>
+        <p>We couldn't load the item data. Please try refreshing the page or check back later.</p>
     </div>
 
-    <!-- Main Content -->
+    <!-- Main content (hidden until loaded) -->
     <div id="main-content" class="hidden">
-        <!-- Tabs Navigation -->
-        <div class="flex border-b border-gray-200 mb-6">
-            <button class="tab-button px-4 py-2 text-sm font-medium active" data-tab="all-items">
-                <i class="fas fa-tshirt mr-1"></i> All Clothing Items
-            </button>
-            <button class="tab-button px-4 py-2 text-sm font-medium" data-tab="box-contents">
-                <i class="fas fa-box-open mr-1"></i> Case Contents
-            </button>
-            <button class="tab-button px-4 py-2 text-sm font-medium" data-tab="playtime-drops">
-                <i class="fas fa-clock mr-1"></i> Playtime Drop Rates
-            </button>
-        </div>
-
-        <!-- Tab Content: All Items -->
-        <div id="tab-all-items" class="tab-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div id="items-container" class="col-span-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-        </div>
-
-        <!-- Tab Content: Box Contents -->
-        <div id="tab-box-contents" class="tab-content hidden">
-            <div id="boxes-container"></div>
-        </div>
-
-        <!-- Tab Content: Playtime Drops -->
-        <div id="tab-playtime-drops" class="tab-content hidden">
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 text-white">
-                    <h3 class="text-xl font-bold">Playtime Drop Chances</h3>
-                    <p class="text-sm">Items you can receive every 20 minutes of gameplay</p>
+        <!-- Search & Filter Controls -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex flex-wrap gap-4 mb-4">
+                <div class="flex-1 min-w-[200px]">
+                    <label for="search-input" class="block text-sm font-medium text-gray-700 mb-1">Search Items</label>
+                    <div class="relative">
+                        <input type="text" id="search-input" placeholder="Search by name..."
+                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 pl-10">
+                        <span class="absolute left-3 top-2.5 text-gray-400">
+                                <i class="fas fa-search"></i>
+                            </span>
+                    </div>
                 </div>
 
-                <div class="divide-y divide-gray-200" id="playtime-drop-rates"></div>
+                <div class="flex-1 min-w-[200px]">
+                    <label for="rarity-filter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Rarity</label>
+                    <select id="rarity-filter"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all">All Rarities</option>
+                        <option value="legendary">Legendary Only</option>
+                        <option value="epic">Epic Only</option>
+                        <option value="rare">Rare Only</option>
+                        <option value="common">Common Only</option>
+                    </select>
+                </div>
+
+                <div class="flex-1 min-w-[200px]">
+                    <label for="box-filter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Box</label>
+                    <select id="box-filter"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all">All Boxes</option>
+                        <!-- Box options will be added dynamically -->
+                    </select>
+                </div>
+
+                <div class="flex-1 min-w-[200px]">
+                    <label for="sort-by" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                    <select id="sort-by"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        <option value="name">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                        <option value="rarity-desc">Rarity (Highest First)</option>
+                        <option value="rarity-asc">Rarity (Lowest First)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center">
+                <div id="filter-summary" class="text-sm text-gray-500">
+                    Showing all items
+                </div>
+                <button id="reset-filters" class="text-blue-500 hover:text-blue-700 text-sm flex items-center">
+                    <i class="fas fa-undo mr-1"></i> Reset Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Items Grid -->
+        <div id="items-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Item cards will be populated dynamically -->
+        </div>
+
+        <!-- Case Boxes Section -->
+        <div class="mt-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6">Case Boxes & Drop Rates</h2>
+            <div id="boxes-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- Box cards will be populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Item Modal -->
+        <div id="item-modal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-black bg-opacity-50 transition-opacity"></div>
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-4xl">
+                    <div class="flex justify-between items-center p-6 border-b">
+                        <h2 id="modal-title" class="text-2xl font-bold text-gray-800">Item Details</h2>
+                        <button id="close-modal" class="text-gray-400 hover:text-gray-500">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="flex flex-wrap">
+                            <div class="w-full md:w-1/3 mb-6 md:mb-0 flex flex-col items-center">
+                                <div id="modal-image-container" class="w-48 h-48 flex items-center justify-center rounded-md mb-4">
+                                    <img id="modal-image" src="" alt="Item" class="max-w-full max-h-full">
+                                </div>
+                                <span id="modal-rarity" class="inline-block px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800 mb-2">Rarity</span>
+                                <div id="modal-marketable" class="text-sm text-center mt-2"></div>
+                                <div id="modal-market-actions" class="flex mt-4 space-x-3">
+                                    <!-- Market buttons will be added dynamically -->
+                                </div>
+                            </div>
+
+                            <div class="w-full md:w-2/3 md:pl-8">
+                                <h3 class="text-xl font-semibold mb-4">Item Description</h3>
+                                <p id="modal-description" class="text-gray-700 mb-6">Item description...</p>
+
+                                <h3 class="text-xl font-semibold mb-4">Drop Rates</h3>
+                                <div id="modal-drop-rates" class="space-y-4">
+                                    <!-- Drop rate information will be added dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    // Global variables to store data
-    let globalItems = [];
-    let boxesMap = {}; // Maps box IDs to full box details including contents
-    let caseToBoxMap = {}; // Maps case itemdefid to generator itemdefid
-
-    // Fetch data from external JSON file
-    document.addEventListener('DOMContentLoaded', async function() {
-        try {
-            const response = await fetch('data.json');
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-            globalItems = data.items;
-
-            // Process data and build box map
-            processItemData();
-
-            // Hide loading indicator and show main content
-            document.getElementById('loading-indicator').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-
-            initializeUI();
-        } catch (error) {
-            console.error('Error fetching data:', error);
-            document.getElementById('loading-indicator').classList.add('hidden');
-            document.getElementById('error-container').classList.remove('hidden');
-        }
-    });
-
-    function processItemData() {
-        // Create a map of itemdefid -> item for faster lookups
-        const itemsById = {};
-        globalItems.forEach(item => {
-            itemsById[item.itemdefid] = item;
-        });
-
-        // Find case and box relationships using exchange
-        const generatorCasePairs = []; // Store generator and case pairs
-
-        // First pass: Find all generators and their exchange item (case)
-        globalItems.forEach(item => {
-            if (item.type === 'generator' && item.exchange) {
-                const exchangeItems = parseExchange(item.exchange);
-                if (exchangeItems.length > 0) {
-                    generatorCasePairs.push({
-                        generatorId: item.itemdefid,
-                        caseId: exchangeItems[0],
-                        generator: item
-                    });
-                }
-            }
-        });
-
-        // Second pass: Update the case-to-box mapping
-        generatorCasePairs.forEach(pair => {
-            const caseItem = itemsById[pair.caseId];
-            if (caseItem) {
-                caseToBoxMap[pair.caseId] = pair.generatorId;
-                // Store the case icon URL in the generator for display
-                if (pair.generator && caseItem.icon_url) {
-                    pair.generator.box_icon_url = caseItem.icon_url;
-                }
-            }
-        });
-
-        // Process all boxes (generators with bundles)
-        globalItems.forEach(item => {
-            if (item.type === 'generator' && item.bundle) {
-                const contents = parseBundle(item.bundle);
-                const totalWeight = contents.reduce((sum, c) => sum + c.weight, 0);
-
-                // Store full details of each box, including processed contents
-                boxesMap[item.itemdefid] = {
-                    ...item,
-                    contents: contents.map(c => {
-                        const contentItem = itemsById[c.id];
-                        if (!contentItem) return null;
-
-                        return {
-                            ...contentItem,
-                            weight: c.weight,
-                            percentage: ((c.weight / totalWeight) * 100).toFixed(2)
-                        };
-                    }).filter(i => i !== null)
-                };
-
-                // Sort contents by percentage descending
-                boxesMap[item.itemdefid].contents.sort((a, b) =>
-                    parseFloat(b.percentage) - parseFloat(a.percentage)
-                );
-            }
-        });
-    }
-
-    function parseExchange(exchangeString) {
-        // Parse exchange string format: "itemdefid:quantity;itemdefid:quantity"
-        if (!exchangeString) return [];
-
-        return exchangeString.split(';')
-            .map(part => {
-                const [id, quantity] = part.split(':');
-                return parseInt(id);
-            });
-    }
-
-    function populateItems(items = null) {
-        const container = document.getElementById('items-container');
-        container.innerHTML = '';
-
-        // Use provided items or filter for clothing items only
-        const clothingItems = items || globalItems.filter(item => item.display_type === "Cloth");
-
-        clothingItems.forEach(item => {
-            const rarity = getRarityFromColors(item);
-            const bgColor = item.background_color || getDefaultBgColor(rarity);
-            const nameColor = item.name_color || getDefaultNameColor(rarity);
-
-            // Find all boxes this item can be found in
-            const sourceBoxes = [];
-            Object.values(boxesMap).forEach(box => {
-                const itemInBox = box.contents.find(c => c.itemdefid === item.itemdefid);
-                if (itemInBox) {
-                    // Find the correct case item that has the icon we want to display
-                    const boxIconUrl = box.box_icon_url ||
-                        (box.icon_url !== 'undefined' ? box.icon_url : null);
-
-                    sourceBoxes.push({
-                        id: box.itemdefid,
-                        name: box.name,
-                        percentage: itemInBox.percentage,
-                        boxRarity: getRarityFromColors(box),
-                        nameColor: box.name_color || getDefaultNameColor(getRarityFromColors(box)),
-                        icon_url: boxIconUrl
-                    });
-                }
-            });
-
-            const itemEl = document.createElement('div');
-            itemEl.className = `bg-white rounded-lg shadow-md overflow-hidden border-t-4`;
-            itemEl.style = `border-color: #${bgColor}`;
-
-            let sourceBoxesHtml = '';
-            if (sourceBoxes.length > 0) {
-                sourceBoxesHtml = `
-                        <div class="mt-3 pt-3 border-t border-gray-100">
-                            <p class="text-xs text-gray-500 mb-2">Available in:</p>
-                            ${sourceBoxes.map(box => `
-                                <div class="flex justify-between items-center mb-2">
-                                    <a href="#" class="box-link flex items-center" data-box-id="${box.id}">
-                                        <img src="${box.icon_url}"
-                                             alt="${box.name}" class="w-5 h-5 mr-2"
-                                             onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
-                                        <span class="text-xs" style="color: #${box.nameColor}">${box.name}</span>
-                                    </a>
-                                    <span class="text-xs font-medium">${box.percentage}%</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-            }
-
-            itemEl.innerHTML = `
-                    <div class="p-4">
-                        <div class="flex items-center mb-3">
-                            <img src="${item.icon_url}"
-                                 alt="${item.name}"
-                                 class="w-16 h-16 object-contain mr-3 bg-gray-100 rounded"
-                                 onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
-                            <div>
-                                <h3 class="font-medium text-lg" style="color: #${nameColor}">${item.name}</h3>
-                                <span class="inline-block px-2 py-1 rounded text-xs text-white"
-                                      style="background-color: #${bgColor}">${rarity}</span>
-                            </div>
-                        </div>
-                        <p class="text-sm text-gray-600 mb-1">${item.description || 'No description available'}</p>
-                        ${sourceBoxesHtml}
-                    </div>
-                `;
-
-            container.appendChild(itemEl);
-        });
-
-        // Add event listeners for box links
-        document.querySelectorAll('.box-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const boxId = link.getAttribute('data-box-id');
-
-                // Switch to box contents tab
-                document.querySelector('[data-tab="box-contents"]').click();
-
-                // Scroll to the specific box
-                const boxElement = document.getElementById(`box-${boxId}`);
-                if (boxElement) {
-                    boxElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    boxElement.classList.add('highlight-box');
-                    setTimeout(() => {
-                        boxElement.classList.remove('highlight-box');
-                    }, 2000);
-                }
-            });
-        });
-    }
-
-    function populateBoxContents() {
-        const boxesContainer = document.getElementById('boxes-container');
-        boxesContainer.innerHTML = '';
-
-        // Get all boxes except playtime generator (140)
-        const boxes = Object.values(boxesMap).filter(box =>
-            box.display_type !== "Key" &&
-            box.itemdefid !== 140
-        );
-
-        boxes.forEach(box => {
-            const rarity = getRarityFromColors(box);
-            const bgColor = box.background_color || getDefaultBgColor(rarity);
-            const nameColor = box.name_color || getDefaultNameColor(rarity);
-
-            // Get the correct case icon from the mapped case
-            const boxIcon = box.box_icon_url || (box.icon_url !== 'undefined' ? box.icon_url : null);
-
-            // Create box section
-            const boxSection = document.createElement('div');
-            boxSection.id = `box-${box.itemdefid}`;
-            boxSection.className = 'mb-6 bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300';
-
-            // Box header with correct color and icon
-            boxSection.innerHTML = `
-                    <div class="px-4 py-3 text-white" style="background-color: #${bgColor}">
-                        <div class="flex items-center">
-                            <img src="${boxIcon}"
-                                 alt="${box.name}" class="w-8 h-8 mr-3"
-                                 onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
-                            <div>
-                                <h3 class="text-xl font-bold">${box.name}</h3>
-                                <p class="text-white text-opacity-90 text-sm">${rarity} Box</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="divide-y divide-gray-200" id="box-content-${box.itemdefid}">
-                    </div>
-                `;
-
-            boxesContainer.appendChild(boxSection);
-
-            // Display box contents
-            const boxContentContainer = document.getElementById(`box-content-${box.itemdefid}`);
-
-            box.contents.forEach(item => {
-                const itemRarity = getRarityFromColors(item);
-                const itemNameColor = item.name_color || getDefaultNameColor(itemRarity);
-                const itemBgColor = item.background_color || getDefaultBgColor(itemRarity);
-
-                const itemRow = document.createElement('div');
-                itemRow.className = 'flex justify-between items-center p-4 hover:bg-gray-50';
-
-                itemRow.innerHTML = `
-                        <div class="flex items-center flex-1">
-                            <img src="${item.icon_url}"
-                                 alt="${item.name}" class="w-10 h-10 mr-3 bg-gray-100 rounded"
-                                 onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
-                            <div>
-                                <h4 class="text-sm font-medium" style="color: #${itemNameColor}">${item.name}</h4>
-                                <span class="inline-block px-2 py-0.5 rounded-sm text-xs text-white"
-                                      style="background-color: #${itemBgColor}">${itemRarity}</span>
-                            </div>
-                        </div>
-                        <span class="text-sm font-bold">${item.percentage}%</span>
-                    `;
-
-                boxContentContainer.appendChild(itemRow);
-            });
-        });
-    }
-
-    function processPlaytimeDrops() {
-        const playtimeGen = globalItems.find(item => item.drop_interval === 20);
-        if (!playtimeGen || !boxesMap[playtimeGen.itemdefid]) return;
-
-        const dropRatesContainer = document.getElementById('playtime-drop-rates');
-        const playtimeBox = boxesMap[playtimeGen.itemdefid];
-
-        // Sort items by rarity and then by percentage
-        const contentItems = [...playtimeBox.contents];
-        contentItems.sort((a, b) => {
-            const rarityOrder = { legendary: 1, epic: 2, rare: 3, common: 4 };
-            const rarityA = getRarityFromColors(a).toLowerCase();
-            const rarityB = getRarityFromColors(b).toLowerCase();
-
-            if (rarityOrder[rarityA] !== rarityOrder[rarityB]) {
-                return rarityOrder[rarityA] - rarityOrder[rarityB];
-            }
-
-            return parseFloat(b.percentage) - parseFloat(a.percentage);
-        });
-
-        // Display items
-        contentItems.forEach(item => {
-            const rarity = getRarityFromColors(item);
-            const nameColor = item.name_color || getDefaultNameColor(rarity);
-            const percentage = item.percentage;
-
-            const itemEl = document.createElement('div');
-            itemEl.className = 'flex justify-between items-center p-4';
-
-            itemEl.innerHTML = `
-                    <div class="flex items-center flex-1">
-                        <img src="${item.icon_url}"
-                             alt="${item.name}" class="w-8 h-8 mr-3"
-                             onerror="this.onerror=null; this.src='https://community.cloudflare.steamstatic.com/economy/image/fWFc82js0fmoRAP-qOIPu5THSWqfSmTELLqcUywGkijVjZULUrsm1j-9xgEAaR4uURrwvz0N252yVaDVWrRTno9m4ccG2GNqxlQoZrC2aG9hcVGUWflbX_drrVu5UGki5sAij6tO';">
-                        <div>
-                            <h4 class="text-sm font-medium" style="color: #${nameColor}">${item.name}</h4>
-                            <span class="text-xs capitalize" style="color: #${nameColor}">${rarity}</span>
-                        </div>
-                    </div>
-                    <span class="text-sm font-semibold">${percentage}%</span>
-                `;
-
-            dropRatesContainer.appendChild(itemEl);
-        });
-    }
-
-    function parseBundle(bundleString) {
-        // Parse bundle string format: "itemdefid:weight;itemdefid:weight"
-        if (!bundleString) return [];
-
-        return bundleString.split(';')
-            .map(part => {
-                const [id, weight] = part.split(':');
-                return {
-                    id: parseInt(id),
-                    weight: parseFloat(weight)
-                };
-            });
-    }
-
-    function initializeUI() {
-        // Populate all sections
-        populateItems();
-        populateBoxContents();
-        processPlaytimeDrops();
-
-        // Set up tab switching
-        const tabButtons = document.querySelectorAll('.tab-button');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // Remove active class from all buttons and hide all contents
-                tabButtons.forEach(b => b.classList.remove('active', 'text-blue-600', 'border-b-2', 'border-blue-600'));
-                tabContents.forEach(c => c.classList.add('hidden'));
-
-                // Add active class to clicked button and show corresponding content
-                button.classList.add('active', 'text-blue-600', 'border-b-2', 'border-blue-600');
-                const tabId = button.getAttribute('data-tab');
-                document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            });
-        });
-    }
-
-    // Helper function to determine item rarity based on colors
-    function getRarityFromColors(item) {
-        const bgColor = item.background_color;
-        const nameColor = item.name_color;
-
-        if (bgColor === 'f39c12' || nameColor === 'e67e22') {
-            return 'Legendary';
-        } else if (bgColor === '9b59b6' || nameColor === '9b59b6') {
-            return 'Epic';
-        } else if (bgColor === '3498db' || nameColor === '3498db') {
-            return 'Rare';
-        } else {
-            return 'Common';
-        }
-    }
-
-    function getDefaultBgColor(rarity) {
-        switch(rarity.toLowerCase()) {
-            case 'legendary': return 'f39c12';
-            case 'epic': return '9b59b6';
-            case 'rare': return '3498db';
-            default: return '95a5a6';
-        }
-    }
-
-    function getDefaultNameColor(rarity) {
-        switch(rarity.toLowerCase()) {
-            case 'legendary': return 'e67e22';
-            case 'epic': return '9b59b6';
-            case 'rare': return '3498db';
-            default: return '7f8c8d';
-        }
-    }
-</script>
-
-<style>
-    .highlight-box {
-        animation: pulse 1s;
-        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0.3);
-    }
-
-    @keyframes pulse {
-        0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-        70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-        100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-    }
-</style>
 </body>
 </html>
