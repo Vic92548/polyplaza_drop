@@ -138,7 +138,7 @@
 <script>
     // Global variables to store data
     let globalItems = [];
-    let boxesMap = {};
+    let boxesMap = {}; // Maps box IDs to full box details including contents
 
     // Fetch data from external JSON file
     document.addEventListener('DOMContentLoaded', async function() {
@@ -150,17 +150,14 @@
             const data = await response.json();
             globalItems = data.items;
 
-            // Create a map of boxes for quick reference
-            globalItems.filter(item => item.type === 'generator' && item.bundle)
-                .forEach(box => {
-                    boxesMap[box.itemdefid] = box;
-                });
+            // Process data and build box map
+            processItemData();
 
             // Hide loading indicator and show main content
             document.getElementById('loading-indicator').classList.add('hidden');
             document.getElementById('main-content').classList.remove('hidden');
 
-            initializeUI(data.items);
+            initializeUI();
         } catch (error) {
             console.error('Error fetching data:', error);
             document.getElementById('loading-indicator').classList.add('hidden');
@@ -168,15 +165,51 @@
         }
     });
 
-    function initializeUI(items) {
+    function processItemData() {
+        // Create a map of itemdefid -> item for faster lookups
+        const itemsById = {};
+        globalItems.forEach(item => {
+            itemsById[item.itemdefid] = item;
+        });
+
+        // Process all boxes (generators with bundles)
+        globalItems.forEach(item => {
+            if (item.type === 'generator' && item.bundle) {
+                const contents = parseBundle(item.bundle);
+                const totalWeight = contents.reduce((sum, c) => sum + c.weight, 0);
+
+                // Store full details of each box, including processed contents
+                boxesMap[item.itemdefid] = {
+                    ...item,
+                    contents: contents.map(c => {
+                        const contentItem = itemsById[c.id];
+                        if (!contentItem) return null;
+
+                        return {
+                            ...contentItem,
+                            weight: c.weight,
+                            percentage: ((c.weight / totalWeight) * 100).toFixed(2)
+                        };
+                    }).filter(i => i !== null)
+                };
+
+                // Sort contents by percentage descending
+                boxesMap[item.itemdefid].contents.sort((a, b) =>
+                    parseFloat(b.percentage) - parseFloat(a.percentage)
+                );
+            }
+        });
+    }
+
+    function initializeUI() {
         // Populate All Items
-        populateItems(items);
+        populateItems();
 
         // Populate Box Contents
-        populateBoxContents(items);
+        populateBoxContents();
 
         // Process Playtime Drops
-        processPlaytimeDrops(items);
+        processPlaytimeDrops();
 
         // Tab Navigation
         document.querySelectorAll('.tab-button').forEach(button => {
@@ -212,8 +245,8 @@
             const searchTerm = searchInput.value.toLowerCase();
             const sortOption = sortBy.value;
 
-            let filteredItems = items.filter(item =>
-                (item.display_type === "Cloth" || item.type === "generator") &&
+            let filteredItems = globalItems.filter(item =>
+                item.display_type === "Cloth" &&
                 (rarity === 'all' || getRarityFromColors(item).toLowerCase() === rarity) &&
                 item.name.toLowerCase().includes(searchTerm)
             );
@@ -237,35 +270,31 @@
         sortBy.addEventListener('change', applyFilters);
     }
 
-    function populateItems(items) {
+    function populateItems(items = null) {
         const container = document.getElementById('items-container');
         container.innerHTML = '';
 
-        // Only show clothing items
-        items.filter(item => item.display_type === "Cloth").forEach(item => {
+        // Use provided items or filter for clothing items only
+        const clothingItems = items || globalItems.filter(item => item.display_type === "Cloth");
+
+        clothingItems.forEach(item => {
             const rarity = getRarityFromColors(item);
             const bgColor = item.background_color || getDefaultBgColor(rarity);
             const nameColor = item.name_color || getDefaultNameColor(rarity);
 
             // Find all boxes this item can be found in
             const sourceBoxes = [];
-            globalItems.forEach(box => {
-                if (box.bundle && box.type === 'generator') {
-                    const contents = parseBundle(box.bundle);
-                    if (contents.find(c => c.id === item.itemdefid)) {
-                        const itemInBox = contents.find(c => c.id === item.itemdefid);
-                        const totalWeight = contents.reduce((sum, c) => sum + c.weight, 0);
-                        const percentage = ((itemInBox.weight / totalWeight) * 100).toFixed(2);
-
-                        sourceBoxes.push({
-                            id: box.itemdefid,
-                            name: box.name,
-                            percentage: percentage,
-                            boxRarity: getRarityFromColors(box),
-                            nameColor: box.name_color || getDefaultNameColor(getRarityFromColors(box)),
-                            icon_url: box.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'
-                        });
-                    }
+            Object.values(boxesMap).forEach(box => {
+                const itemInBox = box.contents.find(c => c.itemdefid === item.itemdefid);
+                if (itemInBox) {
+                    sourceBoxes.push({
+                        id: box.itemdefid,
+                        name: box.name,
+                        percentage: itemInBox.percentage,
+                        boxRarity: getRarityFromColors(box),
+                        nameColor: box.name_color || getDefaultNameColor(getRarityFromColors(box)),
+                        icon_url: box.icon_url
+                    });
                 }
             });
 
@@ -295,8 +324,8 @@
             itemEl.innerHTML = `
                     <div class="p-4">
                         <div class="flex items-center mb-3">
-                            <img src="${item.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'}" alt="${item.name}"
-                                 class="w-16 h-16 object-cover mr-3 bg-gray-100 rounded">
+                            <img src="${item.icon_url}" alt="${item.name}"
+                                 class="w-16 h-16 object-contain mr-3 bg-gray-100 rounded">
                             <div>
                                 <h3 class="font-medium text-lg" style="color: #${nameColor}">${item.name}</h3>
                                 <span class="inline-block px-2 py-1 rounded text-xs text-white"
@@ -333,16 +362,14 @@
         });
     }
 
-    function populateBoxContents(items) {
+    function populateBoxContents() {
         const boxesContainer = document.getElementById('boxes-container');
         boxesContainer.innerHTML = '';
 
-        // Find all box/crate items
-        const boxes = items.filter(item =>
-            item.type === 'generator' &&
-            item.bundle &&
-            item.display_type !== "Key" && // Exclude keys
-            item.itemdefid !== 140 // Exclude playtime generator
+        // Get all boxes except playtime generator (140)
+        const boxes = Object.values(boxesMap).filter(box =>
+            box.display_type !== "Key" &&
+            box.itemdefid !== 140
         );
 
         boxes.forEach(box => {
@@ -359,7 +386,7 @@
             boxSection.innerHTML = `
                     <div class="px-4 py-3 text-white" style="background-color: #${bgColor}">
                         <div class="flex items-center">
-                            <img src="${box.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'}"
+                            <img src="${box.icon_url}"
                                  alt="${box.name}" class="w-8 h-8 mr-3">
                             <div>
                                 <h3 class="text-xl font-bold">${box.name}</h3>
@@ -373,28 +400,10 @@
 
             boxesContainer.appendChild(boxSection);
 
-            // Process the contents of this box
-            const contents = parseBundle(box.bundle);
-            const totalWeight = contents.reduce((sum, c) => sum + c.weight, 0);
-
-            // Map itemdefids to actual items
-            const contentItems = contents
-                .map(c => {
-                    const item = items.find(i => i.itemdefid === c.id);
-                    if (!item) return null;
-
-                    return {
-                        ...item,
-                        weight: c.weight,
-                        percentage: ((c.weight / totalWeight) * 100).toFixed(2)
-                    };
-                })
-                .filter(item => item !== null)
-                .sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage)); // Sort by percentage descending
-
+            // Display box contents
             const boxContentContainer = document.getElementById(`box-content-${box.itemdefid}`);
 
-            contentItems.forEach(item => {
+            box.contents.forEach(item => {
                 const itemRarity = getRarityFromColors(item);
                 const itemNameColor = item.name_color || getDefaultNameColor(itemRarity);
                 const itemBgColor = item.background_color || getDefaultBgColor(itemRarity);
@@ -404,7 +413,7 @@
 
                 itemRow.innerHTML = `
                         <div class="flex items-center flex-1">
-                            <img src="${item.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'}"
+                            <img src="${item.icon_url}"
                                  alt="${item.name}" class="w-10 h-10 mr-3 bg-gray-100 rounded">
                             <div>
                                 <h4 class="text-sm font-medium" style="color: #${itemNameColor}">${item.name}</h4>
@@ -420,30 +429,15 @@
         });
     }
 
-    function processPlaytimeDrops(items) {
-        const playtimeGen = items.find(item => item.drop_interval === 20);
-        if (!playtimeGen) return;
+    function processPlaytimeDrops() {
+        const playtimeGen = globalItems.find(item => item.drop_interval === 20);
+        if (!playtimeGen || !boxesMap[playtimeGen.itemdefid]) return;
 
         const dropRatesContainer = document.getElementById('playtime-drop-rates');
-
-        const contents = parseBundle(playtimeGen.bundle);
-        const totalWeight = contents.reduce((sum, c) => sum + c.weight, 0);
-
-        // Map itemdefids to actual items
-        const contentItems = contents
-            .map(c => {
-                const item = items.find(i => i.itemdefid === c.id);
-                if (!item) return null;
-
-                return {
-                    ...item,
-                    weight: c.weight,
-                    percentage: ((c.weight / totalWeight) * 100).toFixed(2)
-                };
-            })
-            .filter(item => item !== null);
+        const playtimeBox = boxesMap[playtimeGen.itemdefid];
 
         // Sort items by rarity and then by percentage
+        const contentItems = [...playtimeBox.contents];
         contentItems.sort((a, b) => {
             const rarityOrder = { legendary: 1, epic: 2, rare: 3, common: 4 };
             const rarityA = getRarityFromColors(a).toLowerCase();
@@ -467,7 +461,7 @@
 
             itemEl.innerHTML = `
                     <div class="flex items-center flex-1">
-                        <img src="${item.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'}" alt="${item.name}" class="w-8 h-8 mr-3">
+                        <img src="${item.icon_url}" alt="${item.name}" class="w-8 h-8 mr-3">
                         <div>
                             <h4 class="text-sm font-medium" style="color: #${nameColor}">${item.name}</h4>
                             <span class="text-xs capitalize" style="color: #${nameColor}">${rarity}</span>
