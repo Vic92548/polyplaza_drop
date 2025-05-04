@@ -22,185 +22,125 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
 <div class="container mx-auto px-4 py-8">
-    <header class="mb-6 text-center">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">Poly Plaza Clothing Items</h1>
-        <p class="text-gray-600 mb-6">Browse all available clothing items and drop chances</p>
-
-        <!-- Action Buttons -->
-        <div class="flex flex-wrap justify-center gap-4 mb-6">
-            <a href="https://store.steampowered.com/app/2716030/Poly_Plaza/"
-               class="flex items-center bg-[#1b2838] hover:bg-[#2a3f5a] text-white font-medium py-2 px-4 rounded-md transition-colors">
-                <i class="fab fa-steam mr-2"></i> Visit Steam Page
-            </a>
-            <a href="https://steamcommunity.com/market/search?appid=2716030"
-               class="flex items-center bg-[#3b98d4] hover:bg-[#2b88c4] text-white font-medium py-2 px-4 rounded-md transition-colors">
-                <i class="fas fa-shopping-cart mr-2"></i> Steam Market
-            </a>
-            <a href="https://store.steampowered.com/itemstore/2716030/browse/?filter=all"
-               class="flex items-center bg-[#5c7e10] hover:bg-[#4c6e00] text-white font-medium py-2 px-4 rounded-md transition-colors">
-                <i class="fas fa-key mr-2"></i> Purchase Keys
-            </a>
-            <a href="https://discord.gg/Jw5yZQtzv7"
-               class="flex items-center bg-[#7289da] hover:bg-[#6279ca] text-white font-medium py-2 px-4 rounded-md transition-colors">
-                <i class="fab fa-discord mr-2"></i> Join Discord
-            </a>
-        </div>
-    </header>
-
-    <!-- How the system works -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Drop System Overview</h2>
-
-        <div class="flex flex-wrap gap-8">
-            <div class="flex-1 min-w-[300px]">
-                <div class="flex items-center mb-2">
-                    <div class="w-8 h-8 bg-[#f39c12] rounded-full mr-3"></div>
-                    <p class="text-lg font-semibold">Legendary Items <span class="text-sm text-gray-600">(Highest Tier)</span></p>
-                </div>
-                <p class="text-gray-700 mb-4">Extremely rare, top-tier items with the lowest drop rate. A true symbol of prestige.</p>
-
-                <div class="flex items-center mb-2">
-                    <div class="w-8 h-8 bg-[#9b59b6] rounded-full mr-3"></div>
-                    <p class="text-lg font-semibold">Epic Items</p>
-                </div>
-                <p class="text-gray-700 mb-4">Very rare items with special features and designs. Highly sought after.</p>
-            </div>
-
-            <div class="flex-1 min-w-[300px]">
-                <div class="flex items-center mb-2">
-                    <div class="w-8 h-8 bg-[#3498db] rounded-full mr-3"></div>
-                    <p class="text-lg font-semibold">Rare Items</p>
-                </div>
-                <p class="text-gray-700 mb-4">Uncommon items with unique designs. More challenging to acquire than commons.</p>
-
-                <div class="flex items-center mb-2">
-                    <div class="w-8 h-8 bg-[#95a5a6] rounded-full mr-3"></div>
-                    <p class="text-lg font-semibold">Common Items <span class="text-sm text-gray-600">(Base Tier)</span></p>
-                </div>
-                <p class="text-gray-700">Basic items that drop frequently. While more accessible, they're still stylish customization options.</p>
-            </div>
-        </div>
-    </div>
-
     <!-- Loading indicator -->
-    <div id="loading-indicator" class="flex flex-col items-center justify-center py-16">
-        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-xl text-gray-600">Loading item data...</p>
+    <div id="loading-indicator" class="flex flex-col items-center justify-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+        <p class="text-gray-600">Loading item data...</p>
     </div>
 
-    <!-- Error message if fetch fails -->
-    <div id="error-container" class="hidden bg-red-100 text-red-700 p-6 rounded-lg shadow-md text-center">
-        <i class="fas fa-exclamation-triangle text-4xl mb-3"></i>
-        <h3 class="text-xl font-bold mb-2">Error Loading Data</h3>
-        <p>We couldn't load the item data. Please try refreshing the page or check back later.</p>
+    <!-- Error message if data fails to load -->
+    <div id="error-container" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
+        <p>Error loading item data. Please refresh the page or try again later.</p>
     </div>
 
-    <!-- Main content (hidden until loaded) -->
+    <!-- Main content (hidden until data loads) -->
     <div id="main-content" class="hidden">
-        <!-- Search & Filter Controls -->
-        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div class="flex flex-wrap gap-4 mb-4">
-                <div class="flex-1 min-w-[200px]">
-                    <label for="search-input" class="block text-sm font-medium text-gray-700 mb-1">Search Items</label>
+        <header class="mb-6 text-center">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Poly Plaza Clothing Items</h1>
+            <p class="text-gray-600 mb-6">Browse all available clothing items and drop chances</p>
+        </header>
+
+        <!-- Search and filter -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label for="search-input" class="block text-gray-700 mb-1">Search</label>
                     <div class="relative">
-                        <input type="text" id="search-input" placeholder="Search by name..."
-                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 pl-10">
-                        <span class="absolute left-3 top-2.5 text-gray-400">
+                        <input id="search-input" type="text" placeholder="Item name..." class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <span class="absolute right-3 top-2 text-gray-400">
                                 <i class="fas fa-search"></i>
                             </span>
                     </div>
                 </div>
 
-                <div class="flex-1 min-w-[200px]">
-                    <label for="rarity-filter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Rarity</label>
-                    <select id="rarity-filter"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <div>
+                    <label for="rarity-filter" class="block text-gray-700 mb-1">Rarity</label>
+                    <select id="rarity-filter" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="all">All Rarities</option>
-                        <option value="legendary">Legendary Only</option>
-                        <option value="epic">Epic Only</option>
-                        <option value="rare">Rare Only</option>
-                        <option value="common">Common Only</option>
+                        <option value="common">Common</option>
+                        <option value="rare">Rare</option>
+                        <option value="epic">Epic</option>
+                        <option value="legendary">Legendary</option>
                     </select>
                 </div>
 
-                <div class="flex-1 min-w-[200px]">
-                    <label for="box-filter" class="block text-sm font-medium text-gray-700 mb-1">Filter by Box</label>
-                    <select id="box-filter"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <div>
+                    <label for="box-filter" class="block text-gray-700 mb-1">Source Box</label>
+                    <select id="box-filter" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="all">All Boxes</option>
-                        <!-- Box options will be added dynamically -->
+                        <!-- Box options will be populated from JS -->
                     </select>
                 </div>
 
-                <div class="flex-1 min-w-[200px]">
-                    <label for="sort-by" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
-                    <select id="sort-by"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                <div>
+                    <label for="sort-by" class="block text-gray-700 mb-1">Sort By</label>
+                    <select id="sort-by" class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="name">Name (A-Z)</option>
                         <option value="name-desc">Name (Z-A)</option>
-                        <option value="rarity-desc">Rarity (Highest First)</option>
-                        <option value="rarity-asc">Rarity (Lowest First)</option>
+                        <option value="rarity-desc">Rarity (High to Low)</option>
+                        <option value="rarity-asc">Rarity (Low to High)</option>
                     </select>
                 </div>
             </div>
 
             <div class="flex justify-between items-center">
-                <div id="filter-summary" class="text-sm text-gray-500">
-                    Showing all items
-                </div>
-                <button id="reset-filters" class="text-blue-500 hover:text-blue-700 text-sm flex items-center">
-                    <i class="fas fa-undo mr-1"></i> Reset Filters
+                <p id="filter-summary" class="text-sm text-gray-500">Showing 0 items</p>
+                <button id="reset-filters" class="text-blue-500 hover:text-blue-700">
+                    <i class="fas fa-redo-alt mr-1"></i> Reset Filters
                 </button>
             </div>
         </div>
 
-        <!-- Items Grid -->
-        <div id="items-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Item cards will be populated dynamically -->
-        </div>
-
-        <!-- Case Boxes Section -->
-        <div class="mt-12">
-            <h2 class="text-3xl font-bold text-gray-800 mb-6">Case Boxes & Drop Rates</h2>
-            <div id="boxes-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                <!-- Box cards will be populated dynamically -->
+        <!-- Boxes section -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Available Boxes</h2>
+            <div id="boxes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Box cards will be populated from JS -->
             </div>
-        </div>
+        </section>
 
-        <!-- Item Modal -->
-        <div id="item-modal" class="fixed inset-0 z-50 hidden">
-            <div class="absolute inset-0 bg-black bg-opacity-50 transition-opacity"></div>
-            <div class="flex items-center justify-center min-h-screen p-4">
-                <div class="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-4xl">
-                    <div class="flex justify-between items-center p-6 border-b">
-                        <h2 id="modal-title" class="text-2xl font-bold text-gray-800">Item Details</h2>
-                        <button id="close-modal" class="text-gray-400 hover:text-gray-500">
-                            <i class="fas fa-times text-xl"></i>
-                        </button>
+        <!-- Items grid -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Clothing Items</h2>
+            <div id="items-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                <!-- Item cards will be populated from JS -->
+            </div>
+        </section>
+
+        <!-- Item detail modal -->
+        <div id="item-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+            <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center border-b p-4">
+                    <h2 id="modal-title" class="text-xl font-bold text-gray-800">Item Name</h2>
+                    <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="p-6">
+                    <div class="flex flex-col md:flex-row gap-6 mb-6">
+                        <div id="modal-image-container" class="w-full md:w-1/3 bg-gray-200 rounded-lg flex items-center justify-center p-4">
+                            <img id="modal-image" src="" alt="" class="max-w-full max-h-48">
+                        </div>
+
+                        <div class="w-full md:w-2/3">
+                            <div class="flex items-center mb-2">
+                                <span id="modal-rarity" class="text-sm bg-gray-200 text-gray-800 px-2 py-1 rounded-full mr-2">Rarity</span>
+                                <div id="modal-marketable" class="text-sm"></div>
+                            </div>
+
+                            <p id="modal-description" class="text-gray-600 mb-4">Item description goes here...</p>
+
+                            <div id="modal-market-actions" class="flex gap-2">
+                                <!-- Market buttons will be added here -->
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="p-6">
-                        <div class="flex flex-wrap">
-                            <div class="w-full md:w-1/3 mb-6 md:mb-0 flex flex-col items-center">
-                                <div id="modal-image-container" class="w-48 h-48 flex items-center justify-center rounded-md mb-4">
-                                    <img id="modal-image" src="" alt="Item" class="max-w-full max-h-full">
-                                </div>
-                                <span id="modal-rarity" class="inline-block px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800 mb-2">Rarity</span>
-                                <div id="modal-marketable" class="text-sm text-center mt-2"></div>
-                                <div id="modal-market-actions" class="flex mt-4 space-x-3">
-                                    <!-- Market buttons will be added dynamically -->
-                                </div>
-                            </div>
-
-                            <div class="w-full md:w-2/3 md:pl-8">
-                                <h3 class="text-xl font-semibold mb-4">Item Description</h3>
-                                <p id="modal-description" class="text-gray-700 mb-6">Item description...</p>
-
-                                <h3 class="text-xl font-semibold mb-4">Drop Rates</h3>
-                                <div id="modal-drop-rates" class="space-y-4">
-                                    <!-- Drop rate information will be added dynamically -->
-                                </div>
-                            </div>
+                    <div class="border-t pt-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">Drop Sources & Chances</h3>
+                        <div id="modal-drop-rates" class="flex flex-col gap-3">
+                            <!-- Drop rate information will be added here -->
                         </div>
                     </div>
                 </div>

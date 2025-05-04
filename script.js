@@ -71,7 +71,7 @@ function processItemData() {
             if (contents.length === 0) return;
 
             // Calculate the sum of all weights
-            const totalWeight = contents.reduce((sum, c) => sum + c.weight, 0);
+            const totalWeight = contents.reduce((sum, c) => sum + parseFloat(c.weight), 0);
 
             // Store full details of each box, including processed contents
             boxesMap[item.itemdefid] = {
@@ -80,7 +80,7 @@ function processItemData() {
                     const contentItem = itemsById[c.id];
                     if (!contentItem) return null;
 
-                    const percentage = (c.weight / totalWeight) * 100;
+                    const percentage = (parseFloat(c.weight) / totalWeight) * 100;
                     return {
                         ...contentItem,
                         weight: c.weight,
@@ -392,46 +392,17 @@ function populateBoxFilter() {
     });
 }
 
-function setupSearchAndFilter() {
-    // Set up event handlers for search and filter controls
-    document.getElementById('search-input').addEventListener('input', populateItemsGrid);
-    document.getElementById('rarity-filter').addEventListener('change', populateItemsGrid);
-    document.getElementById('box-filter').addEventListener('change', populateItemsGrid);
-    document.getElementById('sort-by').addEventListener('change', populateItemsGrid);
-
-    // Reset filters button
-    document.getElementById('reset-filters').addEventListener('click', () => {
-        document.getElementById('search-input').value = '';
-        document.getElementById('rarity-filter').value = 'all';
-        document.getElementById('box-filter').value = 'all';
-        document.getElementById('sort-by').value = 'name';
-
-        populateItemsGrid();
-    });
-}
-
-function setupModal() {
-    // Set up event handlers for the modal
-    document.getElementById('close-modal').addEventListener('click', () => {
-        document.getElementById('item-modal').classList.add('hidden');
-        document.body.classList.remove('overflow-hidden');
-    });
-
-    // Close modal when clicking outside content
-    document.getElementById('item-modal').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('item-modal')) {
-            document.getElementById('item-modal').classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !document.getElementById('item-modal').classList.contains('hidden')) {
-            document.getElementById('item-modal').classList.add('hidden');
-            document.body.classList.remove('overflow-hidden');
-        }
-    });
+function updateFilterSummary(count) {
+    const summary = document.getElementById('filter-summary');
+    if (count !== undefined) {
+        summary.textContent = `Showing ${count} item${count !== 1 ? 's' : ''}`;
+    } else {
+        // Count wearable items (non-generators)
+        const wearableCount = globalItems.filter(item =>
+            item.type === 'wearable' && !item.tags?.includes('bundle')
+        ).length;
+        summary.textContent = `Showing ${wearableCount} item${wearableCount !== 1 ? 's' : ''}`;
+    }
 }
 
 function openItemModal(item) {
@@ -548,9 +519,7 @@ function openItemModal(item) {
         });
     } else {
         dropRatesEl.innerHTML = `
-            <div class="text-gray-500 italic">
-                This item is not available from any current boxes.
-            </div>
+            <p class="text-gray-500 italic">This item is not available in any boxes.</p>
         `;
     }
 
@@ -559,30 +528,49 @@ function openItemModal(item) {
     document.body.classList.add('overflow-hidden');
 }
 
-function updateFilterSummary(count = 0) {
-    const filterSummary = document.getElementById('filter-summary');
-    const searchTerm = document.getElementById('search-input').value;
-    const rarityFilter = document.getElementById('rarity-filter').value;
-    const boxFilter = document.getElementById('box-filter').value;
+function setupSearchAndFilter() {
+    // Set up event handlers for search and filter controls
+    document.getElementById('search-input').addEventListener('input', populateItemsGrid);
+    document.getElementById('rarity-filter').addEventListener('change', populateItemsGrid);
+    document.getElementById('box-filter').addEventListener('change', populateItemsGrid);
+    document.getElementById('sort-by').addEventListener('change', populateItemsGrid);
 
-    let summaryText = `Showing ${count} items`;
+    // Reset filters button
+    document.getElementById('reset-filters').addEventListener('click', () => {
+        document.getElementById('search-input').value = '';
+        document.getElementById('rarity-filter').value = 'all';
+        document.getElementById('box-filter').value = 'all';
+        document.getElementById('sort-by').value = 'name';
 
-    const filters = [];
-    if (searchTerm) filters.push(`matching "${searchTerm}"`);
-    if (rarityFilter !== 'all') filters.push(`with ${rarityFilter} rarity`);
-    if (boxFilter !== 'all') {
-        const boxName = document.getElementById('box-filter').options[document.getElementById('box-filter').selectedIndex].text;
-        filters.push(`from "${boxName}"`);
-    }
-
-    if (filters.length > 0) {
-        summaryText += ' ' + filters.join(', ');
-    }
-
-    filterSummary.textContent = summaryText;
+        populateItemsGrid();
+    });
 }
 
-function getRarityDistribution(contents) {
+function setupModal() {
+    // Set up event handlers for the modal
+    document.getElementById('close-modal').addEventListener('click', () => {
+        document.getElementById('item-modal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+    });
+
+    // Close modal when clicking outside content
+    document.getElementById('item-modal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('item-modal')) {
+            document.getElementById('item-modal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !document.getElementById('item-modal').classList.contains('hidden')) {
+            document.getElementById('item-modal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+    });
+}
+
+function getRarityDistribution(items) {
     // Count items by rarity
     const counts = {
         legendary: 0,
@@ -591,7 +579,7 @@ function getRarityDistribution(contents) {
         common: 0
     };
 
-    contents.forEach(item => {
+    items.forEach(item => {
         const rarity = determineRarity(item).toLowerCase();
         if (counts[rarity] !== undefined) {
             counts[rarity]++;
