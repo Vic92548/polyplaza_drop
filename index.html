@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poly Plaza - Clothing Items & Drop Rates</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+<div class="container mx-auto px-4 py-8">
+    <header class="mb-6 text-center">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">Poly Plaza Clothing Items</h1>
+        <p class="text-gray-600 mb-6">Browse all available clothing items and drop chances</p>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap justify-center gap-4 mb-6">
+            <a href="https://store.steampowered.com/app/2716030/Poly_Plaza/"
+               class="flex items-center bg-[#1b2838] hover:bg-[#2a3f5a] text-white font-medium py-2 px-4 rounded-md transition-colors">
+                <i class="fab fa-steam mr-2"></i> Visit Steam Page
+            </a>
+            <a href="https://steamcommunity.com/market/search?appid=2716030"
+               class="flex items-center bg-[#3b98d4] hover:bg-[#2b88c4] text-white font-medium py-2 px-4 rounded-md transition-colors">
+                <i class="fas fa-shopping-cart mr-2"></i> Steam Market
+            </a>
+            <a href="https://store.steampowered.com/itemstore/2716030/browse/?filter=all"
+               class="flex items-center bg-[#5c7e10] hover:bg-[#4c6e00] text-white font-medium py-2 px-4 rounded-md transition-colors">
+                <i class="fas fa-key mr-2"></i> Purchase Keys
+            </a>
+            <a href="https://discord.gg/Jw5yZQtzv7"
+               class="flex items-center bg-[#7289da] hover:bg-[#6279ca] text-white font-medium py-2 px-4 rounded-md transition-colors">
+                <i class="fab fa-discord mr-2"></i> Join Discord
+            </a>
+        </div>
+    </header>
+
+    <!-- How the system works -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">How Drops Work</h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-blue-50 p-4 rounded-md border border-blue-100">
+                <h3 class="text-lg font-semibold text-blue-800 mb-2">Playtime Drops</h3>
+                <p class="text-gray-700 mb-2">Every <span class="font-semibold">20 minutes</span> of gameplay, you'll receive a free box that may contain clothing items.</p>
+                <p class="text-gray-700">These boxes have different rarities (Common, Rare, Epic, Legendary) with varying drop chances.</p>
+            </div>
+
+            <div class="bg-purple-50 p-4 rounded-md border border-purple-100">
+                <h3 class="text-lg font-semibold text-purple-800 mb-2">Box & Key System</h3>
+                <p class="text-gray-700 mb-2">Boxes can be opened with keys which can be purchased from the <a href="https://store.steampowered.com/itemstore/2716030/browse/?filter=all" class="text-blue-600 hover:underline">Steam store</a>.</p>
+                <p class="text-gray-700">Each box contains different items with specific drop rates as shown below.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="loading-indicator" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <p class="mt-2 text-gray-600">Loading item data...</p>
+    </div>
+
+    <!-- Error message container -->
+    <div id="error-container" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        <p>Failed to load data. Please try refreshing the page.</p>
+    </div>
+
+    <!-- Main content (hidden until loaded) -->
+    <div id="main-content" class="hidden">
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow-md p-4 mb-8">
+            <div class="flex flex-wrap gap-4 items-center">
+                <div>
+                    <label for="rarityFilter" class="block text-sm font-medium text-gray-700 mb-1">Rarity</label>
+                    <select id="rarityFilter" class="rounded-md border border-gray-300 px-3 py-2 text-sm">
+                        <option value="all">All Rarities</option>
+                        <option value="common">Common</option>
+                        <option value="rare">Rare</option>
+                        <option value="epic">Epic</option>
+                        <option value="legendary">Legendary</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="searchInput" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <input type="text" id="searchInput" placeholder="Search items..."
+                           class="rounded-md border border-gray-300 px-3 py-2 text-sm">
+                </div>
+
+                <div class="ml-auto">
+                    <label for="sortBy" class="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                    <select id="sortBy" class="rounded-md border border-gray-300 px-3 py-2 text-sm">
+                        <option value="name">Name (A-Z)</option>
+                        <option value="rarity">Rarity</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mb-6">
+            <div class="flex border-b border-gray-200">
+                <button class="tab-button py-2 px-4 border-b-2 border-blue-500 font-medium text-blue-600"
+                        data-tab="all-items">All Items</button>
+                <button class="tab-button py-2 px-4 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        data-tab="box-contents">Box Contents</button>
+                <button class="tab-button py-2 px-4 border-b-2 border-transparent font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                        data-tab="playtime-drops">Playtime Drops</button>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="all-items">
+            <div id="items-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Items will be populated here -->
+            </div>
+        </div>
+
+        <div class="tab-content hidden" id="box-contents">
+            <div id="boxes-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <!-- Box sections will be populated here -->
+            </div>
+        </div>
+
+        <div class="tab-content hidden" id="playtime-drops">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6">
+                <div class="bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-3">
+                    <h3 class="text-xl font-bold text-white">Playtime Drop Rates</h3>
+                    <p class="text-white text-opacity-90 text-sm">Every 20 minutes of gameplay</p>
+                </div>
+                <div id="playtime-drop-rates" class="divide-y divide-gray-200">
+                    <!-- Playtime drop rates will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global variables to store data
+    let globalItems = [];
+    let boxesMap = {};
+
+    // Fetch data from external JSON file
+    document.addEventListener('DOMContentLoaded', async function() {
+        try {
+            const response = await fetch('data.json');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            globalItems = data.items;
+
+            // Create a map of boxes for quick reference
+            globalItems.filter(item => item.type === 'generator' && item.bundle)
+                .forEach(box => {
+                    boxesMap[box.itemdefid] = box;
+                });
+
+            // Hide loading indicator and show main content
+            document.getElementById('loading-indicator').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+
+            initializeUI(data.items);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('loading-indicator').classList.add('hidden');
+            document.getElementById('error-container').classList.remove('hidden');
+        }
+    });
+
+    function initializeUI(items) {
+        // Populate All Items
+        populateItems(items);
+
+        // Populate Box Contents
+        populateBoxContents(items);
+
+        // Process Playtime Drops
+        processPlaytimeDrops(items);
+
+        // Tab Navigation
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('border-blue-500', 'text-blue-600');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                });
+
+                // Add active class to clicked tab
+                button.classList.add('border-blue-500', 'text-blue-600');
+                button.classList.remove('border-transparent', 'text-gray-500');
+
+                // Hide all tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                // Show selected tab content
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(tabId).classList.remove('hidden');
+            });
+        });
+
+        // Filtering and Sorting
+        const rarityFilter = document.getElementById('rarityFilter');
+        const searchInput = document.getElementById('searchInput');
+        const sortBy = document.getElementById('sortBy');
+
+        function applyFilters() {
+            const rarity = rarityFilter.value;
+            const searchTerm = searchInput.value.toLowerCase();
+            const sortOption = sortBy.value;
+
+            let filteredItems = items.filter(item =>
+                (item.display_type === "Cloth" || item.type === "generator") &&
+                (rarity === 'all' || getRarityFromColors(item).toLowerCase() === rarity) &&
+                item.name.toLowerCase().includes(searchTerm)
+            );
+
+            if (sortOption === 'name') {
+                filteredItems.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (sortOption === 'rarity') {
+                const rarityOrder = { legendary: 1, epic: 2, rare: 3, common: 4 };
+                filteredItems.sort((a, b) => {
+                    const rarityA = getRarityFromColors(a).toLowerCase();
+                    const rarityB = getRarityFromColors(b).toLowerCase();
+                    return rarityOrder[rarityA] - rarityOrder[rarityB];
+                });
+            }
+
+            populateItems(filteredItems);
+        }
+
+        rarityFilter.addEventListener('change', applyFilters);
+        searchInput.addEventListener('input', applyFilters);
+        sortBy.addEventListener('change', applyFilters);
+    }
+
+    function populateItems(items) {
+        const container = document.getElementById('items-container');
+        container.innerHTML = '';
+
+        // Only show clothing items
+        items.filter(item => item.display_type === "Cloth").forEach(item => {
+            const rarity = getRarityFromColors(item);
+            const bgColor = item.background_color || getDefaultBgColor(rarity);
+            const nameColor = item.name_color || getDefaultNameColor(rarity);
+
+            // Find all boxes this item can be found in
+            const sourceBoxes = [];
+            globalItems.forEach(box => {
+                if (box.bundle && box.type === 'generator') {
+                    const contents = parseBundle(box.bundle);
+                    if (contents.find(c => c.id === item.itemdefid)) {
+                        const itemInBox = contents.find(c => c.id === item.itemdefid);
+                        const totalWeight = contents.reduce((sum, c) => sum + c.weight, 0);
+                        const percentage = ((itemInBox.weight / totalWeight) * 100).toFixed(2);
+
+                        sourceBoxes.push({
+                            id: box.itemdefid,
+                            name: box.name,
+                            percentage: percentage,
+                            boxRarity: getRarityFromColors(box),
+                            nameColor: box.name_color || getDefaultNameColor(getRarityFromColors(box)),
+                            icon_url: box.icon_url
+                        });
+                    }
+                }
+            });
+
+            const itemEl = document.createElement('div');
+            itemEl.className = `bg-white rounded-lg shadow-md overflow-hidden border-t-4`;
+            itemEl.style = `border-color: #${bgColor}`;
+
+            let sourceBoxesHtml = '';
+            if (sourceBoxes.length > 0) {
+                sourceBoxesHtml = `
+                        <div class="mt-3 pt-3 border-t border-gray-100">
+                            <p class="text-xs text-gray-500 mb-2">Available in:</p>
+                            ${sourceBoxes.map(box => `
+                                <div class="flex justify-between items-center mb-2">
+                                    <a href="#" class="box-link flex items-center" data-box-id="${box.id}">
+                                        <img src="${box.icon_url || 'https://via.placeholder.com/20'}"
+                                             alt="${box.name}" class="w-5 h-5 mr-2">
+                                        <span class="text-xs" style="color: #${box.nameColor}">${box.name}</span>
+                                    </a>
+                                    <span class="text-xs font-medium">${box.percentage}%</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+            }
+
+            itemEl.innerHTML = `
+                    <div class="p-4">
+                        <div class="flex items-center mb-3">
+                            <img src="${item.icon_url || 'https://via.placeholder.com/64'}" alt="${item.name}"
+                                 class="w-16 h-16 object-cover mr-3 bg-gray-100 rounded">
+                            <div>
+                                <h3 class="font-medium text-lg" style="color: #${nameColor}">${item.name}</h3>
+                                <span class="inline-block px-2 py-1 rounded text-xs text-white"
+                                      style="background-color: #${bgColor}">${rarity}</span>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-1">${item.description || 'No description available'}</p>
+                        ${sourceBoxesHtml}
+                    </div>
+                `;
+
+            container.appendChild(itemEl);
+        });
+
+        // Add event listeners for box links
+        document.querySelectorAll('.box-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const boxId = link.getAttribute('data-box-id');
+
+                // Switch to box contents tab
+                document.querySelector('[data-tab="box-contents"]').click();
+
+                // Scroll to the specific box
+                const boxElement = document.getElementById(`box-${boxId}`);
+                if (boxElement) {
+                    boxElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    boxElement.classList.add('highlight-box');
+                    setTimeout(() => {
+                        boxElement.classList.remove('highlight-box');
+                    }, 2000);
+                }
+            });
+        });
+    }
+
+    function populateBoxContents(items) {
+        const boxesContainer = document.getElementById('boxes-container');
+        boxesContainer.innerHTML = '';
+
+        // Find all box/crate items
+        const boxes = items.filter(item =>
+            item.type === 'generator' &&
+            item.bundle &&
+            item.display_type !== "Key" && // Exclude keys
+            item.itemdefid !== 140 // Exclude playtime generator
+        );
+
+        boxes.forEach(box => {
+            const boxContentsDiv = document.createElement('div');
+            boxContentsDiv.id = `box-${box.itemdefid}`;
+            boxContentsDiv.className = 'bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300';
+
+            const rarity = getRarityFromColors(box);
+            const bgColor = box.background_color || getDefaultBgColor(rarity);
+            const nameColor = box.name_color || getDefaultNameColor(rarity);
+
+            let boxHeaderClass = 'bg-gray-500';
+            if (rarity.toLowerCase() === 'common') boxHeaderClass = 'bg-[#95a5a6]';
+            if (rarity.toLowerCase() === 'rare') boxHeaderClass = 'bg-[#3498db]';
+            if (rarity.toLowerCase() === 'epic') boxHeaderClass = 'bg-[#9b59b6]';
+            if (rarity.toLowerCase() === 'legendary') boxHeaderClass = 'bg-[#f39c12]';
+
+            const boxHeader = document.createElement('div');
+            boxHeader.className = `${boxHeaderClass} px-4 py-3 flex items-center`;
+            boxHeader.innerHTML = `
+                    <img src="${box.icon_url || 'https://via.placeholder.com/32'}" alt="${box.name}" class="w-8 h-8 mr-3">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">${box.name}</h3>
+                        <p class="text-white text-opacity-90 text-sm">${rarity} Box</p>
+                    </div>
+                `;
+
+            boxContentsDiv.appendChild(boxHeader);
+
+            // Create content container
+            const contentsContainer = document.createElement('div');
+            contentsContainer.className = 'divide-y divide-gray-200';
+            boxContentsDiv.appendChild(contentsContainer);
+
+            // Add to main container
+            boxesContainer.appendChild(boxContentsDiv);
+
+            // Process the contents of this box
+            const contents = parseBundle(box.bundle);
+            const totalWeight = contents.reduce((sum, c) => sum + c.weight, 0);
+
+            // Map itemdefids to actual items
+            const contentItems = contents
+                .map(c => {
+                    const item = items.find(i => i.itemdefid === c.id);
+                    if (!item) return null;
+
+                    return {
+                        ...item,
+                        weight: c.weight,
+                        percentage: ((c.weight / totalWeight) * 100).toFixed(2)
+                    };
+                })
+                .filter(item => item !== null);
+
+            // Sort items by rarity and then by percentage
+            contentItems.sort((a, b) => {
+                const rarityOrder = { legendary: 1, epic: 2, rare: 3, common: 4 };
+                const rarityA = getRarityFromColors(a).toLowerCase();
+                const rarityB = getRarityFromColors(b).toLowerCase();
+
+                if (rarityOrder[rarityA] !== rarityOrder[rarityB]) {
+                    return rarityOrder[rarityA] - rarityOrder[rarityB];
+                }
+
+                return parseFloat(b.percentage) - parseFloat(a.percentage);
+            });
+
+            // Display items
+            contentItems.forEach(item => {
+                const rarity = getRarityFromColors(item);
+                const nameColor = item.name_color || getDefaultNameColor(rarity);
+                const bgColor = item.background_color || getDefaultBgColor(rarity);
+                const percentage = item.percentage;
+
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex justify-between items-center p-4';
+
+                itemEl.innerHTML = `
+                        <div class="flex items-center flex-1">
+                            <img src="${item.icon_url || 'https://via.placeholder.com/32'}" alt="${item.name}" class="w-8 h-8 mr-3">
+                            <div>
+                                <h4 class="text-sm font-medium" style="color: #${nameColor}">${item.name}</h4>
+                                <div class="flex items-center">
+                                    <span class="inline-block px-2 py-0.5 rounded-sm text-xs text-white mr-2"
+                                          style="background-color: #${bgColor}">${rarity}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <span class="text-sm font-semibold">${percentage}%</span>
+                    `;
+
+                contentsContainer.appendChild(itemEl);
+            });
+        });
+    }
+
+    function processPlaytimeDrops(items) {
+        const playtimeGen = items.find(item => item.drop_interval === 20);
+        if (!playtimeGen) return;
+
+        const dropRatesContainer = document.getElementById('playtime-drop-rates');
+
+        const contents = parseBundle(playtimeGen.bundle);
+        const totalWeight = contents.reduce((sum, c) => sum + c.weight, 0);
+
+        // Map itemdefids to actual items
+        const contentItems = contents
+            .map(c => {
+                const item = items.find(i => i.itemdefid === c.id);
+                if (!item) return null;
+
+                return {
+                    ...item,
+                    weight: c.weight,
+                    percentage: ((c.weight / totalWeight) * 100).toFixed(2)
+                };
+            })
+            .filter(item => item !== null);
+
+        // Sort items by rarity and then by percentage
+        contentItems.sort((a, b) => {
+            const rarityOrder = { legendary: 1, epic: 2, rare: 3, common: 4 };
+            const rarityA = getRarityFromColors(a).toLowerCase();
+            const rarityB = getRarityFromColors(b).toLowerCase();
+
+            if (rarityOrder[rarityA] !== rarityOrder[rarityB]) {
+                return rarityOrder[rarityA] - rarityOrder[rarityB];
+            }
+
+            return parseFloat(b.percentage) - parseFloat(a.percentage);
+        });
+
+        // Display items
+        contentItems.forEach(item => {
+            const rarity = getRarityFromColors(item);
+            const nameColor = item.name_color || getDefaultNameColor(rarity);
+            const percentage = item.percentage;
+
+            const itemEl = document.createElement('div');
+            itemEl.className = 'flex justify-between items-center p-4';
+
+            itemEl.innerHTML = `
+                    <div class="flex items-center flex-1">
+                        <img src="${item.icon_url || 'https://via.placeholder.com/32'}" alt="${item.name}" class="w-8 h-8 mr-3">
+                        <div>
+                            <h4 class="text-sm font-medium" style="color: #${nameColor}">${item.name}</h4>
+                            <span class="text-xs capitalize" style="color: #${nameColor}">${rarity}</span>
+                        </div>
+                    </div>
+                    <span class="text-sm font-semibold">${percentage}%</span>
+                `;
+
+            dropRatesContainer.appendChild(itemEl);
+        });
+    }
+
+    function parseBundle(bundle) {
+        if (!bundle) return [];
+
+        return bundle.split(';')
+            .map(item => {
+                const [id, weight] = item.split('x');
+                return {
+                    id: parseInt(id),
+                    weight: parseInt(weight)
+                };
+            });
+    }
+
+    function getRarityFromColors(item) {
+        if (!item) return 'Common';
+
+        const bgColor = item.background_color?.toLowerCase();
+        const nameColor = item.name_color?.toLowerCase();
+
+        if (bgColor === 'e67e22' || nameColor === 'e67e22' ||
+            bgColor === 'f39c12' || nameColor === 'f39c12') {
+            return 'Legendary';
+        } else if (bgColor === '9b59b6' || nameColor === '9b59b6') {
+            return 'Epic';
+        } else if (bgColor === '3498db' || nameColor === '3498db') {
+            return 'Rare';
+        } else {
+            return 'Common';
+        }
+    }
+
+    function getDefaultBgColor(rarity) {
+        switch(rarity.toLowerCase()) {
+            case 'legendary': return 'f39c12';
+            case 'epic': return '9b59b6';
+            case 'rare': return '3498db';
+            default: return '95a5a6';
+        }
+    }
+
+    function getDefaultNameColor(rarity) {
+        switch(rarity.toLowerCase()) {
+            case 'legendary': return 'e67e22';
+            case 'epic': return '9b59b6';
+            case 'rare': return '3498db';
+            default: return '7f8c8d';
+        }
+    }
+</script>
+
+<style>
+    .highlight-box {
+        animation: pulse 1s;
+        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0.3);
+    }
+
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+        70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+    }
+</style>
+</body>
+</html>
