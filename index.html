@@ -116,7 +116,7 @@
         </div>
 
         <div class="tab-content hidden" id="box-contents">
-            <div id="boxes-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            <div id="boxes-container" class="space-y-8">
                 <!-- Box sections will be populated here -->
             </div>
         </div>
@@ -263,7 +263,7 @@
                             percentage: percentage,
                             boxRarity: getRarityFromColors(box),
                             nameColor: box.name_color || getDefaultNameColor(getRarityFromColors(box)),
-                            icon_url: box.icon_url
+                            icon_url: box.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'
                         });
                     }
                 }
@@ -281,7 +281,7 @@
                             ${sourceBoxes.map(box => `
                                 <div class="flex justify-between items-center mb-2">
                                     <a href="#" class="box-link flex items-center" data-box-id="${box.id}">
-                                        <img src="${box.icon_url || 'https://via.placeholder.com/20'}"
+                                        <img src="${box.icon_url}"
                                              alt="${box.name}" class="w-5 h-5 mr-2">
                                         <span class="text-xs" style="color: #${box.nameColor}">${box.name}</span>
                                     </a>
@@ -295,7 +295,7 @@
             itemEl.innerHTML = `
                     <div class="p-4">
                         <div class="flex items-center mb-3">
-                            <img src="${item.icon_url || 'https://via.placeholder.com/64'}" alt="${item.name}"
+                            <img src="${item.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'}" alt="${item.name}"
                                  class="w-16 h-16 object-cover mr-3 bg-gray-100 rounded">
                             <div>
                                 <h3 class="font-medium text-lg" style="color: #${nameColor}">${item.name}</h3>
@@ -346,39 +346,32 @@
         );
 
         boxes.forEach(box => {
-            const boxContentsDiv = document.createElement('div');
-            boxContentsDiv.id = `box-${box.itemdefid}`;
-            boxContentsDiv.className = 'bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300';
-
             const rarity = getRarityFromColors(box);
             const bgColor = box.background_color || getDefaultBgColor(rarity);
             const nameColor = box.name_color || getDefaultNameColor(rarity);
 
-            let boxHeaderClass = 'bg-gray-500';
-            if (rarity.toLowerCase() === 'common') boxHeaderClass = 'bg-[#95a5a6]';
-            if (rarity.toLowerCase() === 'rare') boxHeaderClass = 'bg-[#3498db]';
-            if (rarity.toLowerCase() === 'epic') boxHeaderClass = 'bg-[#9b59b6]';
-            if (rarity.toLowerCase() === 'legendary') boxHeaderClass = 'bg-[#f39c12]';
+            // Create box section
+            const boxSection = document.createElement('div');
+            boxSection.id = `box-${box.itemdefid}`;
+            boxSection.className = 'mb-6 bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300';
 
-            const boxHeader = document.createElement('div');
-            boxHeader.className = `${boxHeaderClass} px-4 py-3 flex items-center`;
-            boxHeader.innerHTML = `
-                    <img src="${box.icon_url || 'https://via.placeholder.com/32'}" alt="${box.name}" class="w-8 h-8 mr-3">
-                    <div>
-                        <h3 class="text-xl font-bold text-white">${box.name}</h3>
-                        <p class="text-white text-opacity-90 text-sm">${rarity} Box</p>
+            // Box header with correct color and icon
+            boxSection.innerHTML = `
+                    <div class="px-4 py-3 text-white" style="background-color: #${bgColor}">
+                        <div class="flex items-center">
+                            <img src="${box.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'}"
+                                 alt="${box.name}" class="w-8 h-8 mr-3">
+                            <div>
+                                <h3 class="text-xl font-bold">${box.name}</h3>
+                                <p class="text-white text-opacity-90 text-sm">${rarity} Box</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="divide-y divide-gray-200" id="box-content-${box.itemdefid}">
                     </div>
                 `;
 
-            boxContentsDiv.appendChild(boxHeader);
-
-            // Create content container
-            const contentsContainer = document.createElement('div');
-            contentsContainer.className = 'divide-y divide-gray-200';
-            boxContentsDiv.appendChild(contentsContainer);
-
-            // Add to main container
-            boxesContainer.appendChild(boxContentsDiv);
+            boxesContainer.appendChild(boxSection);
 
             // Process the contents of this box
             const contents = parseBundle(box.bundle);
@@ -396,46 +389,33 @@
                         percentage: ((c.weight / totalWeight) * 100).toFixed(2)
                     };
                 })
-                .filter(item => item !== null);
+                .filter(item => item !== null)
+                .sort((a, b) => parseFloat(b.percentage) - parseFloat(a.percentage)); // Sort by percentage descending
 
-            // Sort items by rarity and then by percentage
-            contentItems.sort((a, b) => {
-                const rarityOrder = { legendary: 1, epic: 2, rare: 3, common: 4 };
-                const rarityA = getRarityFromColors(a).toLowerCase();
-                const rarityB = getRarityFromColors(b).toLowerCase();
+            const boxContentContainer = document.getElementById(`box-content-${box.itemdefid}`);
 
-                if (rarityOrder[rarityA] !== rarityOrder[rarityB]) {
-                    return rarityOrder[rarityA] - rarityOrder[rarityB];
-                }
-
-                return parseFloat(b.percentage) - parseFloat(a.percentage);
-            });
-
-            // Display items
             contentItems.forEach(item => {
-                const rarity = getRarityFromColors(item);
-                const nameColor = item.name_color || getDefaultNameColor(rarity);
-                const bgColor = item.background_color || getDefaultBgColor(rarity);
-                const percentage = item.percentage;
+                const itemRarity = getRarityFromColors(item);
+                const itemNameColor = item.name_color || getDefaultNameColor(itemRarity);
+                const itemBgColor = item.background_color || getDefaultBgColor(itemRarity);
 
-                const itemEl = document.createElement('div');
-                itemEl.className = 'flex justify-between items-center p-4';
+                const itemRow = document.createElement('div');
+                itemRow.className = 'flex justify-between items-center p-4 hover:bg-gray-50';
 
-                itemEl.innerHTML = `
+                itemRow.innerHTML = `
                         <div class="flex items-center flex-1">
-                            <img src="${item.icon_url || 'https://via.placeholder.com/32'}" alt="${item.name}" class="w-8 h-8 mr-3">
+                            <img src="${item.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'}"
+                                 alt="${item.name}" class="w-10 h-10 mr-3 bg-gray-100 rounded">
                             <div>
-                                <h4 class="text-sm font-medium" style="color: #${nameColor}">${item.name}</h4>
-                                <div class="flex items-center">
-                                    <span class="inline-block px-2 py-0.5 rounded-sm text-xs text-white mr-2"
-                                          style="background-color: #${bgColor}">${rarity}</span>
-                                </div>
+                                <h4 class="text-sm font-medium" style="color: #${itemNameColor}">${item.name}</h4>
+                                <span class="inline-block px-2 py-0.5 rounded-sm text-xs text-white"
+                                      style="background-color: #${itemBgColor}">${itemRarity}</span>
                             </div>
                         </div>
-                        <span class="text-sm font-semibold">${percentage}%</span>
+                        <span class="text-sm font-bold">${item.percentage}%</span>
                     `;
 
-                contentsContainer.appendChild(itemEl);
+                boxContentContainer.appendChild(itemRow);
             });
         });
     }
@@ -487,7 +467,7 @@
 
             itemEl.innerHTML = `
                     <div class="flex items-center flex-1">
-                        <img src="${item.icon_url || 'https://via.placeholder.com/32'}" alt="${item.name}" class="w-8 h-8 mr-3">
+                        <img src="${item.icon_url || 'https://community.akamai.steamstatic.com/economy/image/placeholder'}" alt="${item.name}" class="w-8 h-8 mr-3">
                         <div>
                             <h4 class="text-sm font-medium" style="color: #${nameColor}">${item.name}</h4>
                             <span class="text-xs capitalize" style="color: #${nameColor}">${rarity}</span>
